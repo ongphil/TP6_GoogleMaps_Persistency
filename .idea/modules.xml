@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/TP6_GoogleMaps_Persistency.iml" filepath="$PROJECT_DIR$/TP6_GoogleMaps_Persistency.iml" />
+      <module fileurl="file://D:\ECE\OCRES\Programmation_mobile\TP6_GoogleMaps_Persistency\TP6_GoogleMaps_Persistency.iml" filepath="D:\ECE\OCRES\Programmation_mobile\TP6_GoogleMaps_Persistency\TP6_GoogleMaps_Persistency.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://D:\ECE\OCRES\Programmation_mobile\TP6_GoogleMaps_Persistency\app\app.iml" filepath="D:\ECE\OCRES\Programmation_mobile\TP6_GoogleMaps_Persistency\app\app.iml" />
     </modules>
   </component>
 </project>

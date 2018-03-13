@@ -8,4 +8,6 @@
     tools:context="persistency.googlemap.tp6.android.tp6_googlemaps_persistency.CalculatriceActivity"
     tools:showIn="@layout/app_bar_calculatrice">
 
+
+
 </android.support.constraint.ConstraintLayout>
