@@ -46,6 +46,10 @@
         <activity
             android:name=".CalculatriceActivity"
             android:label="@string/title_activity_calculatrice"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".EditTextActivity"
+            android:label="@string/title_activity_edit_text"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

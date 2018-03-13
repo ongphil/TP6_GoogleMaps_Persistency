@@ -1,0 +1,17 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="persistency.googlemap.tp6.android.tp6_googlemaps_persistency.EditTextFragment"
+    android:background="@android:color/holo_orange_dark">
+
+    <EditText
+        android:id="@+id/text_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="EditText Fragment"
+        android:inputType="textPersonName"
+        android:textColor="@android:color/white" />
+
+</FrameLayout>
