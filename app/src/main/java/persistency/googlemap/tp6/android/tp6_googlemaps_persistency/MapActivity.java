@@ -147,11 +147,11 @@ public class MapActivity extends AppCompatActivity
             Intent intent = new Intent(this, MapActivity.class);
             startActivity(intent);
         }
-        /*
+
         else if (id == R.id.nav_calculatrice) {
-            Intent intent = new Intent(this, MapActivity.class);
+            Intent intent = new Intent(this, CalculatriceActivity.class);
             startActivity(intent);
-        }*/
+        }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
