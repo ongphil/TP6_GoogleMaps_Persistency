@@ -8,6 +8,34 @@
     tools:context="persistency.googlemap.tp6.android.tp6_googlemaps_persistency.CalculatriceActivity"
     tools:showIn="@layout/app_bar_calculatrice">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@id/display"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="6" />
+
+        <FrameLayout
+            android:id="@id/keyboard"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="6" />
+
+        <EditText
+            android:id="@+id/iptext"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:ems="10"
+            android:hint="Adresse IP du serveur"
+            android:inputType="textPersonName" />
+
+
+    </LinearLayout>
 
 
 </android.support.constraint.ConstraintLayout>
