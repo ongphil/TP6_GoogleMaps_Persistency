@@ -34,9 +34,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleMap.OnMapClickListener, LocationListener {
+ public String test;
 
-
-    private GoogleMap mMap;
+    private static GoogleMap mMap;
     private SupportMapFragment mapFragment;
 
     private TextView currentLatText;
@@ -53,6 +53,7 @@ public class MapActivity extends AppCompatActivity
     String[] permissions = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
     private int USER_LOCATION_REQUESTCODE = 1;
 
+    private CoordonneesDataSource dataSource;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,10 +79,7 @@ public class MapActivity extends AppCompatActivity
 
         // Get the location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        // Define the criteria how to select the location provider -> use
-        // default
-        Criteria criteria = new Criteria();
-        //provider = locationManager.getBestProvider(criteria, false);
+
         if(locationManager.isProviderEnabled(locationManager.NETWORK_PROVIDER)){
             provider = locationManager.NETWORK_PROVIDER;
         }
@@ -93,7 +91,6 @@ public class MapActivity extends AppCompatActivity
             toast.show();
         }
 
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         {
 
@@ -103,6 +100,24 @@ public class MapActivity extends AppCompatActivity
         {
             ActivityCompat.requestPermissions(this, permissions, USER_LOCATION_REQUESTCODE);
         }
+
+
+
+
+
+
+        dataSource = new CoordonneesDataSource(this);
+        dataSource.open();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Location location = locationManager.getLastKnownLocation(provider);
+            Coordonnee coordonnee = null;
+            if (location != null) {
+                int lat = (int) (location.getLatitude());
+                int lng = (int) (location.getLongitude());
+                coordonnee = dataSource.createCoord(lat, lng);
+            }
+        }
+
     }
 
     @Override
@@ -208,6 +223,7 @@ public class MapActivity extends AppCompatActivity
             if(location != null) {
                 int lat = (int) (location.getLatitude());
                 int lng = (int) (location.getLongitude());
+                test="Current location";
 
                 if(currentMarker != null)
                 {
@@ -218,6 +234,8 @@ public class MapActivity extends AppCompatActivity
                 currentLatText.setText("Lat : " + String.valueOf(lat));
                 currentLngText.setText("Lng : " + String.valueOf(lng));
                 currentMarker = mMap.addMarker(new MarkerOptions().position(position).title("Ma position").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+
+
             }
             else
             {
@@ -242,6 +260,7 @@ public class MapActivity extends AppCompatActivity
 
     @Override
     public void onMapClick(LatLng latLng) {
+        Coordonnee coordonnee = null;
         if(latLng != null) {
 
             if(clickedMarker != null)
@@ -256,6 +275,8 @@ public class MapActivity extends AppCompatActivity
 
             markerLatText.setText("Lat : " + String.valueOf(lat));
             markerLngText.setText("Lng : " + String.valueOf(lng));
+            coordonnee = dataSource.createCoord(lat, lng);
+
         }
     }
 
