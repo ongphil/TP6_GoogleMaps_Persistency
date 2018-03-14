@@ -50,6 +50,10 @@
         <activity
             android:name=".EditTextActivity"
             android:label="@string/title_activity_edit_text"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".CoordonneesActivity"
+            android:label="@string/title_activity_coordonnees"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

@@ -6,6 +6,9 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Alex on 14/03/2018.
  */
@@ -53,6 +56,31 @@ public class CoordonneesDataSource {
         String[] whereArgs = { String.valueOf(id)};
 
         database.update(MySQLiteHelper.TABLE_COORDONNEES, values, "id=?", whereArgs );
+
+        Cursor cursor = database.query(MySQLiteHelper.TABLE_COORDONNEES, allColumns, MySQLiteHelper.COLUMN_ID
+                + " = " + id, null, null ,null ,null);
+        cursor.moveToFirst();
+        Coordonnee updateCoordonnee = cursorToCoord(cursor);
+        cursor.close();
+
+        return updateCoordonnee;
+    }
+
+    public List<Coordonnee> getAllCoordonnes() {
+        List<Coordonnee> coordonnees = new ArrayList<Coordonnee>();
+
+        Cursor cursor = database.query(MySQLiteHelper.TABLE_COORDONNEES,
+                allColumns, null, null, null, null, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            Coordonnee coordonnee = cursorToCoord(cursor);
+            coordonnees.add(coordonnee);
+            cursor.moveToNext();
+        }
+        // assurez-vous de la fermeture du curseur
+        cursor.close();
+        return coordonnees;
     }
 
     private Coordonnee cursorToCoord(Cursor cursor) {
