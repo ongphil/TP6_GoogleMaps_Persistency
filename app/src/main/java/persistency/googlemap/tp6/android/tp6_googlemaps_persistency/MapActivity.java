@@ -32,9 +32,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.List;
+
 public class MapActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleMap.OnMapClickListener, LocationListener {
- public String test;
+
 
     private static GoogleMap mMap;
     private SupportMapFragment mapFragment;
@@ -54,6 +56,11 @@ public class MapActivity extends AppCompatActivity
     private int USER_LOCATION_REQUESTCODE = 1;
 
     private CoordonneesDataSource dataSource;
+    private List<Coordonnee> list_coords;
+
+    private Coordonnee currentCoords = null;
+    private Coordonnee markerCoords = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,21 +109,27 @@ public class MapActivity extends AppCompatActivity
         }
 
 
-
-
-
-
         dataSource = new CoordonneesDataSource(this);
         dataSource.open();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Location location = locationManager.getLastKnownLocation(provider);
-            Coordonnee coordonnee = null;
-            if (location != null) {
-                int lat = (int) (location.getLatitude());
-                int lng = (int) (location.getLongitude());
-                coordonnee = dataSource.createCoord(lat, lng);
+
+        if(dataSource.isDBEmpty())
+        {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                Location location = locationManager.getLastKnownLocation(provider);
+                Coordonnee current_coordonnee = null;
+                Coordonnee marker_coordonnee = null;
+                if (location != null) {
+                    int lat = (int) (location.getLatitude());
+                    int lng = (int) (location.getLongitude());
+                    current_coordonnee = dataSource.createCoord(lat, lng);
+                    marker_coordonnee = dataSource.createCoord(0, 0);
+
+                }
             }
         }
+
+        list_coords = dataSource.getAllCoordonnees(); // Liste pour connaitre les ID des coordonnées
+
 
     }
 
@@ -174,8 +187,8 @@ public class MapActivity extends AppCompatActivity
         }
 
         else if (id == R.id.nav_Coordonnees){
-            Intent intent = new Intent(this, CoordonneesActivity.class);
-            startActivity(intent);
+            //Intent intent = new Intent(this, CoordonneesActivity.class);
+            //startActivity(intent);
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -223,7 +236,6 @@ public class MapActivity extends AppCompatActivity
             if(location != null) {
                 int lat = (int) (location.getLatitude());
                 int lng = (int) (location.getLongitude());
-                test="Current location";
 
                 if(currentMarker != null)
                 {
@@ -231,8 +243,8 @@ public class MapActivity extends AppCompatActivity
                 }
 
                 LatLng position = new LatLng(lat, lng);
-                currentLatText.setText("Lat : " + String.valueOf(lat));
-                currentLngText.setText("Lng : " + String.valueOf(lng));
+                currentCoords = dataSource.updateCoord(list_coords.get(0).getId(), lat, lng);
+                setCurrentText(currentCoords.getLat(), currentCoords.getLng());
                 currentMarker = mMap.addMarker(new MarkerOptions().position(position).title("Ma position").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 
 
@@ -273,11 +285,25 @@ public class MapActivity extends AppCompatActivity
             int lat = (int) (latLng.latitude);
             int lng = (int) (latLng.longitude);
 
-            markerLatText.setText("Lat : " + String.valueOf(lat));
-            markerLngText.setText("Lng : " + String.valueOf(lng));
-            coordonnee = dataSource.createCoord(lat, lng);
+            //markerLatText.setText("Lat : " + String.valueOf(lat));
+            //markerLngText.setText("Lng : " + String.valueOf(lng));
+            //setMarkerText(lat, lng);
+            markerCoords = dataSource.updateCoord(list_coords.get(1).getId(), lat, lng);
+            setMarkerText(markerCoords.getLat(), markerCoords.getLng());
 
         }
+    }
+
+    public void setCurrentText(int lat, int lng)
+    {
+        currentLatText.setText("Lat : " + String.valueOf(lat));
+        currentLngText.setText("Lng : " + String.valueOf(lng));
+    }
+
+    public void setMarkerText(int lat, int lng)
+    {
+        markerLatText.setText("Lat : " + String.valueOf(lat));
+        markerLngText.setText("Lng : " + String.valueOf(lng));
     }
 
 
@@ -308,9 +334,6 @@ public class MapActivity extends AppCompatActivity
         }
         locationManager.removeUpdates(this);
     }
-
-
-
 
 
     @Override

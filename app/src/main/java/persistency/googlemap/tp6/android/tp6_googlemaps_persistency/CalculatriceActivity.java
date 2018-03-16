@@ -140,8 +140,8 @@ public class CalculatriceActivity extends AppCompatActivity
         }
 
         else if (id == R.id.nav_Coordonnees){
-            Intent intent = new Intent(this, CoordonneesActivity.class);
-            startActivity(intent);
+            //Intent intent = new Intent(this, CoordonneesActivity.class);
+            //startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

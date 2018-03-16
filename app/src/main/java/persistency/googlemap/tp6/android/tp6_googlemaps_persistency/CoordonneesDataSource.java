@@ -49,13 +49,24 @@ public class CoordonneesDataSource {
         return newCoordonnee;
     }
 
+    public boolean isDBEmpty()
+    {
+        boolean isEmpty = true;
+        Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM " + MySQLiteHelper.TABLE_COORDONNEES, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            isEmpty = (cursor.getInt (0) == 0);
+        }
+        cursor.close();
+        return isEmpty;
+    }
+
     public Coordonnee updateCoord (long id, int lat, int lng){
         ContentValues values = new ContentValues();
         values.put(MySQLiteHelper.COLUMN_LAT, lat);
         values.put(MySQLiteHelper.COLUMN_LNG, lng);
-        String[] whereArgs = { String.valueOf(id)};
+        //String[] whereArgs = { String.valueOf(id)};
 
-        database.update(MySQLiteHelper.TABLE_COORDONNEES, values, "id=?", whereArgs );
+        database.update(MySQLiteHelper.TABLE_COORDONNEES, values, "_id=" + id, null );
 
         Cursor cursor = database.query(MySQLiteHelper.TABLE_COORDONNEES, allColumns, MySQLiteHelper.COLUMN_ID
                 + " = " + id, null, null ,null ,null);
@@ -66,7 +77,7 @@ public class CoordonneesDataSource {
         return updateCoordonnee;
     }
 
-    public List<Coordonnee> getAllCoordonnes() {
+    public List<Coordonnee> getAllCoordonnees() {
         List<Coordonnee> coordonnees = new ArrayList<Coordonnee>();
 
         Cursor cursor = database.query(MySQLiteHelper.TABLE_COORDONNEES,
@@ -81,6 +92,25 @@ public class CoordonneesDataSource {
         // assurez-vous de la fermeture du curseur
         cursor.close();
         return coordonnees;
+    }
+
+    public Coordonnee getCoord(long id) {
+        Coordonnee coords = null;
+
+        Cursor cursor = null;
+        cursor = database.rawQuery("SELECT * FROM " + MySQLiteHelper.TABLE_COORDONNEES + " WHERE _id=" + id, null);
+        if(cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            coords = cursorToCoord(cursor);
+        }
+
+        cursor.close();
+        return coords;
+    }
+
+    public void deleteAll()
+    {
+        database.delete(MySQLiteHelper.TABLE_COORDONNEES, null, null);
     }
 
     private Coordonnee cursorToCoord(Cursor cursor) {
