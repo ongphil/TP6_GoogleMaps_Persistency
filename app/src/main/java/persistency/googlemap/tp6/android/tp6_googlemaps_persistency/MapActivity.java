@@ -9,6 +9,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -36,16 +37,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.List;
 
 public class MapActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleMap.OnMapClickListener, LocationListener {
+        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleMap.OnMapClickListener, LocationListener, SharedCoordsFragment.OnFragmentInteractionListener, SQLCoordsFragment.OnFragmentInteractionListener {
 
 
     private static GoogleMap mMap;
     private SupportMapFragment mapFragment;
 
-    private TextView currentLatText;
-    private TextView currentLngText;
-    private TextView markerLatText;
-    private TextView markerLngText;
 
     private Marker currentMarker;
     private Marker clickedMarker;
@@ -63,6 +60,9 @@ public class MapActivity extends AppCompatActivity
     private Coordonnee markerCoords = null;
 
     private SharedPreferences SharedPrefCoords;
+
+    private SharedCoordsFragment sharedfrag;
+    private SQLCoordsFragment sqlfrag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,10 +82,6 @@ public class MapActivity extends AppCompatActivity
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        currentLatText = (TextView) findViewById(R.id.currentLatText);
-        currentLngText = (TextView) findViewById(R.id.currentLngText);
-        markerLatText = (TextView) findViewById(R.id.markerLatText);
-        markerLngText = (TextView) findViewById(R.id.markerLngText);
 
         // Get the location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -135,7 +131,10 @@ public class MapActivity extends AppCompatActivity
 
         SharedPrefCoords = this.getSharedPreferences("PREFS_COORDS", MODE_PRIVATE);
 
+        sharedfrag = new SharedCoordsFragment();
+        sqlfrag = SQLCoordsFragment.newInstance();
 
+        getSupportFragmentManager().beginTransaction().add(R.id.frameCoords, sharedfrag).commit();
 
     }
 
@@ -192,10 +191,16 @@ public class MapActivity extends AppCompatActivity
             startActivity(intent);
         }
 
-        else if (id == R.id.nav_Coordonnees){
-            //Intent intent = new Intent(this, CoordonneesActivity.class);
-            //startActivity(intent);
+        else if (id == R.id.nav_sharedPreferences){
+            getSupportFragmentManager().beginTransaction().remove(sqlfrag).commitNow();
+            getSupportFragmentManager().beginTransaction().replace(R.id.frameCoords, sharedfrag).commitNow();
         }
+
+        else if (id == R.id.nav_SQLite){
+            getSupportFragmentManager().beginTransaction().remove(sharedfrag).commitNow();
+            getSupportFragmentManager().beginTransaction().replace(R.id.frameCoords, sqlfrag).commitNow();
+        }
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -250,18 +255,18 @@ public class MapActivity extends AppCompatActivity
 
                 LatLng position = new LatLng(lat, lng);
                 currentCoords = dataSource.updateCoord(list_coords.get(0).getId(), lat, lng);
-                setCurrentText(currentCoords.getLat(), currentCoords.getLng());
-                currentMarker = mMap.addMarker(new MarkerOptions().position(position).title("Ma position").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                sqlfrag.setCurrentPosition(currentCoords.getLat(), currentCoords.getLng());
 
                 SharedPrefCoords.edit().putInt("PREFS_LAT_CURRENT", lat)
                                        .putInt("PREFS_LNG_CURRENT", lng)
                                        .apply();
 
+                sharedfrag.setCurrentPosition(SharedPrefCoords.getInt("PREFS_LAT_CURRENT", 145697), SharedPrefCoords.getInt("PREFS_LNG_CURRENT", 145697));
+                currentMarker = mMap.addMarker(new MarkerOptions().position(position).title("Ma position").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
             }
             else
             {
-                currentLatText.setText("Erreur");
-                currentLngText.setText("Erreur");
+                sharedfrag.setCurrentPosition(999,999);
             }
         }
         else // Si on ne les as pas, on les demande et ça appelle ensuite "onRequestPermissionsResult"
@@ -281,7 +286,6 @@ public class MapActivity extends AppCompatActivity
 
     @Override
     public void onMapClick(LatLng latLng) {
-        Coordonnee coordonnee = null;
         if(latLng != null) {
 
             if(clickedMarker != null)
@@ -294,30 +298,16 @@ public class MapActivity extends AppCompatActivity
             int lat = (int) (latLng.latitude);
             int lng = (int) (latLng.longitude);
 
-            //markerLatText.setText("Lat : " + String.valueOf(lat));
-            //markerLngText.setText("Lng : " + String.valueOf(lng));
-            //setMarkerText(lat, lng);
             markerCoords = dataSource.updateCoord(list_coords.get(1).getId(), lat, lng);
-            setMarkerText(markerCoords.getLat(), markerCoords.getLng());
+            sqlfrag.setMarkerPosition(markerCoords.getLat(),markerCoords.getLng());
+
 
             SharedPrefCoords.edit().putInt("PREFS_LAT_MARKER", lat)
                     .putInt("PREFS_LNG_MARKER", lng)
                     .apply();
+            sharedfrag.setMarkerPosition(SharedPrefCoords.getInt("PREFS_LAT_MARKER", 145697), SharedPrefCoords.getInt("PREFS_LNG_MARKER", 145697));
         }
     }
-
-    public void setCurrentText(int lat, int lng)
-    {
-        currentLatText.setText("Lat : " + String.valueOf(lat));
-        currentLngText.setText("Lng : " + String.valueOf(lng));
-    }
-
-    public void setMarkerText(int lat, int lng)
-    {
-        markerLatText.setText("Lat : " + SharedPrefCoords.getInt("PREFS_LAT_MARKER", 145697));
-        markerLngText.setText("Lng : " + SharedPrefCoords.getInt("PREFS_LNG_MARKER", 145697));
-    }
-
 
 
     /* Request updates at startup */
@@ -362,4 +352,5 @@ public class MapActivity extends AppCompatActivity
     public void onProviderDisabled(String s) {
 
     }
+
 }

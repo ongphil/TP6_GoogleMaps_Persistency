@@ -14,9 +14,10 @@
         android:id="@+id/nav_editText"
         android:title="Edit text" />
     <item
-        android:id="@+id/nav_Coordonnees"
-        android:title="Coordonnees" />
-
-
+        android:id="@+id/nav_sharedPreferences"
+        android:title="SharedPeferences" />
+    <item
+        android:id="@+id/nav_SQLite"
+        android:title="SQLite" />
 
 </menu>
