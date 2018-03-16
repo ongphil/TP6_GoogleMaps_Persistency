@@ -195,17 +195,23 @@ public class MapActivity extends AppCompatActivity
         }
 
         else if (id == R.id.nav_sharedPreferences){
-            getSupportFragmentManager().beginTransaction().remove(sqlfrag).commitNow();
-            getSupportFragmentManager().beginTransaction().replace(R.id.frameCoords, sharedfrag).commitNow();
-            active_fragment = true;
-            findCurrentLocation();
+            if(!active_fragment)
+            {
+                getSupportFragmentManager().beginTransaction().remove(sqlfrag).commitNow();
+                getSupportFragmentManager().beginTransaction().replace(R.id.frameCoords, sharedfrag).commitNow();
+                active_fragment = true;
+                sharedfrag.setCurrentPosition(SharedPrefCoords.getInt("PREFS_LAT_CURRENT", 145697), SharedPrefCoords.getInt("PREFS_LNG_CURRENT", 145697));
+                sharedfrag.setMarkerPosition(SharedPrefCoords.getInt("PREFS_LAT_MARKER", 145697), SharedPrefCoords.getInt("PREFS_LNG_MARKER", 145697));
+
+            }
         }
 
         else if (id == R.id.nav_SQLite){
             getSupportFragmentManager().beginTransaction().remove(sharedfrag).commitNow();
             getSupportFragmentManager().beginTransaction().replace(R.id.frameCoords, sqlfrag).commitNow();
             active_fragment = false;
-            findCurrentLocation();
+            sqlfrag.setCurrentPosition(currentCoords.getLat(), currentCoords.getLng());
+            sqlfrag.setMarkerPosition(markerCoords.getLat(),markerCoords.getLng());
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -267,11 +273,14 @@ public class MapActivity extends AppCompatActivity
                     SharedPrefCoords.edit().putInt("PREFS_LAT_CURRENT", lat)
                             .putInt("PREFS_LNG_CURRENT", lng)
                             .apply();
-
+                    currentCoords = dataSource.updateCoord(list_coords.get(0).getId(), lat, lng);
                     sharedfrag.setCurrentPosition(SharedPrefCoords.getInt("PREFS_LAT_CURRENT", 145697), SharedPrefCoords.getInt("PREFS_LNG_CURRENT", 145697));
                 }
                 else
                 {
+                    SharedPrefCoords.edit().putInt("PREFS_LAT_CURRENT", lat)
+                            .putInt("PREFS_LNG_CURRENT", lng)
+                            .apply();
                     currentCoords = dataSource.updateCoord(list_coords.get(0).getId(), lat, lng);
                     sqlfrag.setCurrentPosition(currentCoords.getLat(), currentCoords.getLng());
 
@@ -326,10 +335,14 @@ public class MapActivity extends AppCompatActivity
                 SharedPrefCoords.edit().putInt("PREFS_LAT_MARKER", lat)
                         .putInt("PREFS_LNG_MARKER", lng)
                         .apply();
+                markerCoords = dataSource.updateCoord(list_coords.get(1).getId(), lat, lng);
                 sharedfrag.setMarkerPosition(SharedPrefCoords.getInt("PREFS_LAT_MARKER", 145697), SharedPrefCoords.getInt("PREFS_LNG_MARKER", 145697));
             }
             else
             {
+                SharedPrefCoords.edit().putInt("PREFS_LAT_MARKER", lat)
+                        .putInt("PREFS_LNG_MARKER", lng)
+                        .apply();
                 markerCoords = dataSource.updateCoord(list_coords.get(1).getId(), lat, lng);
                 sqlfrag.setMarkerPosition(markerCoords.getLat(),markerCoords.getLng());
             }
