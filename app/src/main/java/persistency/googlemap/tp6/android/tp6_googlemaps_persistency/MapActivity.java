@@ -3,6 +3,7 @@ package persistency.googlemap.tp6.android.tp6_googlemaps_persistency;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -60,6 +61,8 @@ public class MapActivity extends AppCompatActivity
 
     private Coordonnee currentCoords = null;
     private Coordonnee markerCoords = null;
+
+    private SharedPreferences SharedPrefCoords;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +132,9 @@ public class MapActivity extends AppCompatActivity
         }
 
         list_coords = dataSource.getAllCoordonnees(); // Liste pour connaitre les ID des coordonnées
+
+        SharedPrefCoords = this.getSharedPreferences("PREFS_COORDS", MODE_PRIVATE);
+
 
 
     }
@@ -247,6 +253,9 @@ public class MapActivity extends AppCompatActivity
                 setCurrentText(currentCoords.getLat(), currentCoords.getLng());
                 currentMarker = mMap.addMarker(new MarkerOptions().position(position).title("Ma position").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 
+                SharedPrefCoords.edit().putInt("PREFS_LAT_CURRENT", lat)
+                                       .putInt("PREFS_LNG_CURRENT", lng)
+                                       .apply();
 
             }
             else
@@ -291,6 +300,9 @@ public class MapActivity extends AppCompatActivity
             markerCoords = dataSource.updateCoord(list_coords.get(1).getId(), lat, lng);
             setMarkerText(markerCoords.getLat(), markerCoords.getLng());
 
+            SharedPrefCoords.edit().putInt("PREFS_LAT_MARKER", lat)
+                    .putInt("PREFS_LNG_MARKER", lng)
+                    .apply();
         }
     }
 
@@ -302,8 +314,8 @@ public class MapActivity extends AppCompatActivity
 
     public void setMarkerText(int lat, int lng)
     {
-        markerLatText.setText("Lat : " + String.valueOf(lat));
-        markerLngText.setText("Lng : " + String.valueOf(lng));
+        markerLatText.setText("Lat : " + SharedPrefCoords.getInt("PREFS_LAT_MARKER", 145697));
+        markerLngText.setText("Lng : " + SharedPrefCoords.getInt("PREFS_LNG_MARKER", 145697));
     }
 
 
