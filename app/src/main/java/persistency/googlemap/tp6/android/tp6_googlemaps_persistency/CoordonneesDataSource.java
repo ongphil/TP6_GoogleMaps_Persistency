@@ -34,6 +34,7 @@ public class CoordonneesDataSource {
         dbHelper.close();
     }
 
+    /* Méthode pour insérer une ligne dans la table et return un objet de type Coordonnee */
     public Coordonnee createCoord (int lat, int lng) {
         ContentValues values = new ContentValues();
         values.put (MySQLiteHelper.COLUMN_LAT, lat);
@@ -49,6 +50,7 @@ public class CoordonneesDataSource {
         return newCoordonnee;
     }
 
+    /* Méthode pour savoir si la table est vide ou non */
     public boolean isDBEmpty()
     {
         boolean isEmpty = true;
@@ -60,11 +62,11 @@ public class CoordonneesDataSource {
         return isEmpty;
     }
 
+    /* Méthode pour update une ligne de la table et return un objet de type Coordonnee */
     public Coordonnee updateCoord (long id, int lat, int lng){
         ContentValues values = new ContentValues();
         values.put(MySQLiteHelper.COLUMN_LAT, lat);
         values.put(MySQLiteHelper.COLUMN_LNG, lng);
-        //String[] whereArgs = { String.valueOf(id)};
 
         database.update(MySQLiteHelper.TABLE_COORDONNEES, values, "_id=" + id, null );
 
@@ -77,6 +79,7 @@ public class CoordonneesDataSource {
         return updateCoordonnee;
     }
 
+    /* Méthode pour récupérer dans une liste toutes les lignes de la table */
     public List<Coordonnee> getAllCoordonnees() {
         List<Coordonnee> coordonnees = new ArrayList<Coordonnee>();
 
@@ -89,30 +92,11 @@ public class CoordonneesDataSource {
             coordonnees.add(coordonnee);
             cursor.moveToNext();
         }
-        // assurez-vous de la fermeture du curseur
         cursor.close();
         return coordonnees;
     }
 
-    public Coordonnee getCoord(long id) {
-        Coordonnee coords = null;
-
-        Cursor cursor = null;
-        cursor = database.rawQuery("SELECT * FROM " + MySQLiteHelper.TABLE_COORDONNEES + " WHERE _id=" + id, null);
-        if(cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            coords = cursorToCoord(cursor);
-        }
-
-        cursor.close();
-        return coords;
-    }
-
-    public void deleteAll()
-    {
-        database.delete(MySQLiteHelper.TABLE_COORDONNEES, null, null);
-    }
-
+    /* Méthode pour return un objet de type Coordonnee en fonction d'une ligne de la table */
     private Coordonnee cursorToCoord(Cursor cursor) {
         Coordonnee coordonnee = new Coordonnee();
         coordonnee.setId(cursor.getLong(0));
