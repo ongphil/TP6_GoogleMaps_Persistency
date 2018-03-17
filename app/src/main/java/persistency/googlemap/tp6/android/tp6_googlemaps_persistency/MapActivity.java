@@ -5,16 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -23,7 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
@@ -36,13 +30,16 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.List;
 
+
+/* LAB6 : Adding Persistency,   TRBOVIC Alexandre & ONG Philippe
+ */
+
 public class MapActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, GoogleMap.OnMapClickListener, LocationListener, SharedCoordsFragment.OnFragmentInteractionListener, SQLCoordsFragment.OnFragmentInteractionListener {
 
 
     private static GoogleMap mMap;
     private SupportMapFragment mapFragment;
-
 
     private Marker currentMarker;
     private Marker clickedMarker;
@@ -110,10 +107,10 @@ public class MapActivity extends AppCompatActivity
         }
 
 
-        dataSource = new CoordonneesDataSource(this);
-        dataSource.open();
+        dataSource = new CoordonneesDataSource(this); // On crée l'objet de la classe qui nous permettra d'effectuer des opérations avec la BDD
+        dataSource.open(); // On ouvre la connexion avec la BDD
 
-        if(dataSource.isDBEmpty())
+        if(dataSource.isDBEmpty()) // Si la table "Coordonnees" est vide, on va créer les deux lignes de la currentPosition et markerPosition que l'on va updater par la suite à chaque fois
         {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 Location location = locationManager.getLastKnownLocation(provider);
@@ -122,23 +119,21 @@ public class MapActivity extends AppCompatActivity
                 if (location != null) {
                     int lat = (int) (location.getLatitude());
                     int lng = (int) (location.getLongitude());
-                    current_coordonnee = dataSource.createCoord(lat, lng);
-                    marker_coordonnee = dataSource.createCoord(0, 0);
-
+                    current_coordonnee = dataSource.createCoord(lat, lng); // on crée la ligne des coordonnées de notre position actuelle
+                    marker_coordonnee = dataSource.createCoord(0, 0); // on crée la ligne des coordonées du marqueur
                 }
             }
         }
 
-        list_coords = dataSource.getAllCoordonnees(); // Liste pour connaitre les ID des coordonnées
+        list_coords = dataSource.getAllCoordonnees(); // Liste contenant les deux objets de classe Coordonnée (la current et le marker) pour pouvoir lire leur ID
 
-        SharedPrefCoords = this.getSharedPreferences("PREFS_COORDS", MODE_PRIVATE);
+        SharedPrefCoords = this.getSharedPreferences("PREFS_COORDS", MODE_PRIVATE); // On récupère ou crée le fichier sharedPreferences
 
-        sharedfrag = new SharedCoordsFragment();
-        sqlfrag = SQLCoordsFragment.newInstance();
+        sharedfrag = new SharedCoordsFragment(); // On instancie un fragment de type SharedCoordsFragment
+        sqlfrag = new SQLCoordsFragment(); // On instancie un fragment de type SQLCoordsFragment
 
-        getSupportFragmentManager().beginTransaction().add(R.id.frameCoords, sharedfrag).commit();
-
-
+        getSupportFragmentManager().beginTransaction().add(R.id.frameCoords, sharedfrag).commit(); // On ajoute le fragment Shared au FrameLayout
+        /* Les fragments pourront être interchangés par le menu de la NavigationDrawer */
     }
 
     @Override
@@ -195,23 +190,33 @@ public class MapActivity extends AppCompatActivity
         }
 
         else if (id == R.id.nav_sharedPreferences){
-            if(!active_fragment)
+            if(!active_fragment) // Si on affichait le fragment SQLite
             {
-                getSupportFragmentManager().beginTransaction().remove(sqlfrag).commitNow();
-                getSupportFragmentManager().beginTransaction().replace(R.id.frameCoords, sharedfrag).commitNow();
-                active_fragment = true;
+                active_fragment = true; // on signale qu'on passe en fragment SharedPreferences
+                getSupportFragmentManager().beginTransaction().replace(R.id.frameCoords, sharedfrag).commitNow(); // on intervertit les fragments
+                /* On va lire les valeurs dans le fichier sharedPreferences,
+                et on appelle la fonction du sharedCoordsFragment permettant de modifier le texte des textViews */
                 sharedfrag.setCurrentPosition(SharedPrefCoords.getInt("PREFS_LAT_CURRENT", 145697), SharedPrefCoords.getInt("PREFS_LNG_CURRENT", 145697));
-                sharedfrag.setMarkerPosition(SharedPrefCoords.getInt("PREFS_LAT_MARKER", 145697), SharedPrefCoords.getInt("PREFS_LNG_MARKER", 145697));
-
+                if(clickedMarker!=null) // Si on a déjà posé un marqueur sur la map
+                {
+                    sharedfrag.setMarkerPosition(SharedPrefCoords.getInt("PREFS_LAT_MARKER", 145697), SharedPrefCoords.getInt("PREFS_LNG_MARKER", 145697));
+                }
             }
         }
 
         else if (id == R.id.nav_SQLite){
-            getSupportFragmentManager().beginTransaction().remove(sharedfrag).commitNow();
-            getSupportFragmentManager().beginTransaction().replace(R.id.frameCoords, sqlfrag).commitNow();
-            active_fragment = false;
-            sqlfrag.setCurrentPosition(currentCoords.getLat(), currentCoords.getLng());
-            sqlfrag.setMarkerPosition(markerCoords.getLat(),markerCoords.getLng());
+            if(active_fragment) // Si on affichait le fragment sharedPreferences
+            {
+                active_fragment = false; // on signale qu'on passe en fragment SQLite
+                getSupportFragmentManager().beginTransaction().replace(R.id.frameCoords, sqlfrag).commitNow(); // on intervertit les fragments
+                /* On lit la latitude et la longitude de l'objet currentCoords de type Coordonnee grâce à ses Getters,
+                et on appelle la fonction du SQLCoordsFragment permettant de modifier le texte des textViews */
+                sqlfrag.setCurrentPosition(currentCoords.getLat(), currentCoords.getLng());
+                if(clickedMarker != null) // Si on a déjà posé un marqueur sur la map
+                {
+                    sqlfrag.setMarkerPosition(markerCoords.getLat(),markerCoords.getLng());
+                }
+            }
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -268,27 +273,34 @@ public class MapActivity extends AppCompatActivity
 
                 LatLng position = new LatLng(lat, lng);
 
-                if(active_fragment)
+                if(active_fragment) // Si on affiche actuellement le fragment sharedPreferences
                 {
+                    /* On update les valeurs du fichier sharedPreferences */
                     SharedPrefCoords.edit().putInt("PREFS_LAT_CURRENT", lat)
                             .putInt("PREFS_LNG_CURRENT", lng)
                             .apply();
+                    /* On update également les valeurs dans la base SQLite et on update également l'objet currentCoords de type Coordonnee */
                     currentCoords = dataSource.updateCoord(list_coords.get(0).getId(), lat, lng);
+                    /* On appelle la fonction du fragment sharedPreferences pour setter la valeur dans les textViews */
                     sharedfrag.setCurrentPosition(SharedPrefCoords.getInt("PREFS_LAT_CURRENT", 145697), SharedPrefCoords.getInt("PREFS_LNG_CURRENT", 145697));
                 }
-                else
+                else // Si on affiche actuellement le fragment SQLite
                 {
+                    /* On update les valeurs du fichier sharedPreferences */
                     SharedPrefCoords.edit().putInt("PREFS_LAT_CURRENT", lat)
                             .putInt("PREFS_LNG_CURRENT", lng)
                             .apply();
+                    /* On update également les valeurs dans la base SQLite et on update également l'objet currentCoords de type Coordonnee */
                     currentCoords = dataSource.updateCoord(list_coords.get(0).getId(), lat, lng);
+                    /* On appelle la fonction du fragment SQLite pour setter la valeur dans les textViews
+                     * en lisant les valeurs de l'objet currentCoords grâce à ses Getters */
                     sqlfrag.setCurrentPosition(currentCoords.getLat(), currentCoords.getLng());
 
                 }
 
                 currentMarker = mMap.addMarker(new MarkerOptions().position(position).title("Ma position").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
             }
-            else
+            else // Si on ne parvient pas à récupérer les coordonnées de la position actuelle
             {
                 if(active_fragment)
                 {
@@ -346,9 +358,6 @@ public class MapActivity extends AppCompatActivity
                 markerCoords = dataSource.updateCoord(list_coords.get(1).getId(), lat, lng);
                 sqlfrag.setMarkerPosition(markerCoords.getLat(),markerCoords.getLng());
             }
-
-
-
 
         }
     }

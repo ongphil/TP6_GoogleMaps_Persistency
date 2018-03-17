@@ -1,15 +1,12 @@
 package persistency.googlemap.tp6.android.tp6_googlemaps_persistency;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 
 public class SharedCoordsFragment extends Fragment {
@@ -61,13 +58,13 @@ public class SharedCoordsFragment extends Fragment {
     }
 
     public void setCurrentPosition(int lat, int lng){
-        currentLatText.setText("lat : " + String.valueOf(lat));
-        currentLngText.setText("lng : " + String.valueOf(lng));
+        currentLatText.setText("Lat : " + String.valueOf(lat));
+        currentLngText.setText("Lng : " + String.valueOf(lng));
     }
 
     public void setMarkerPosition(int lat, int lng){
-        markerLatText.setText("lat : " + String.valueOf(lat));
-        markerLngText.setText("lng : " + String.valueOf(lng));
+        markerLatText.setText("Lat : " + String.valueOf(lat));
+        markerLngText.setText("Lng : " + String.valueOf(lng));
     }
     /**
      * This interface must be implemented by activities that contain this
